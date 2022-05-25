@@ -1,9 +1,11 @@
+""" A module to run cloud calculation. """
+
 from enum import Enum
 import json
 from viz import get_vtk_config
 import zipfile
 import pathlib
-from query import Query
+from .query import Query
 from pollination_streamlit.api.client import ApiClient
 from pollination_streamlit.interactors import Job, NewJob, Recipe
 from queenbee.job.job import JobStatusEnum
@@ -48,40 +50,10 @@ def run_cloud_simulation(query: Query,
     query.job_id = job.id
 
     return job.id
-  
-def request_results(query: Query,
-    api_client: ApiClient):
-    job = Job(query.owner, 
-      query.project, 
-      query.job_id, 
-      client=api_client)
 
-    url = f'https://app.pollination.cloud/projects/{query.owner}/{query.project}/jobs/{query.job_id}'
-
-    if job.status.status in [
-            JobStatusEnum.pre_processing,
-            JobStatusEnum.running,
-            JobStatusEnum.created,
-            JobStatusEnum.unknown]:
-        return SimStatus.INCOPLETE, url
-    elif job.status.status in [JobStatusEnum.failed, JobStatusEnum.cancelled]:
-        return SimStatus.KO, url
-    else:
-        return SimStatus.COMPLETE, url
-
-
-def post_process_cloud(
-    query: Query,
-    api_client: ApiClient,
-    here: pathlib.Path):
-    owner = query.owner
-    project = query.project
-    job_id = query.job_id
-
+def post_process_job(job: Job, here: pathlib.Path):
     data_folder = here.joinpath('data')
     data_folder.mkdir(exist_ok=True)
-
-    job = Job(owner, project, job_id, api_client)
 
     run = job.runs[0]
     input_model_path = job.runs_dataframe.dataframe['model'][0]
@@ -106,9 +78,11 @@ def post_process_cloud(
 
     # load model and results and save them as a vtkjs file
     hb_model = HBModel.from_dict(model_dict)
+    if not viz_file.is_file():
+        model = VTKModel(hb_model, SensorGridOptions.Mesh)
+        model.to_vtkjs(
+            folder=viz_file.parent, config=cfg_file,
+            model_display_mode=DisplayMode.Wireframe
+        )
 
-    model = VTKModel(hb_model, SensorGridOptions.Sensors)
-    model.to_vtkjs(folder=viz_file.parent, config=cfg_file,
-                    display_mode=DisplayMode.Wireframe)
-    
-    return viz_file, res_folder.as_posix(), model_dict
+    return viz_file, res_folder.as_posix(), model_dict, output_folder

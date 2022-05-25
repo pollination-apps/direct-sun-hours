@@ -1,3 +1,5 @@
+""" A module for query. """
+
 import streamlit as st
 from uuid import uuid4
 
@@ -72,4 +74,3 @@ class Query:
     def project(self, value):
         self._project = value
         self._update_query()
-
