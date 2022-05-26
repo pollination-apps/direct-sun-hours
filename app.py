@@ -35,7 +35,7 @@ def main():
 
     # navbar
     step = stx.stepper_bar(
-        steps=["Login", "Run Simulation", "Read results"])
+        steps=["Login", "Run simulation", "Read results"])
 
     # common paths
     target_folder = pathlib.Path(__file__).parent

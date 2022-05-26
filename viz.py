@@ -16,7 +16,7 @@ def get_vtk_config(results_path: str,
                 "legend_parameters": {
                     "hide_legend": False,
                     "min": 0,
-                    "max": 8760,
+                    "max": 5,
                     "color_set": "nuanced",
                     "label_parameters": {
                         "color": [34, 247, 10],
