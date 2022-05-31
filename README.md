@@ -7,6 +7,7 @@
 ### Settings
 
 Setup your project folder:
+
 1. Go to [Pollination Cloud / projects](https://app.pollination.cloud/projects)
 2. Select the project where you want to run your simulation
 3. Click on `Settings/Recipes`
@@ -18,7 +19,8 @@ Provide a pollination cloud API key, username and project name (e.g. demo)
 
 ### Run simulation
 
-If you are using the browser:
+If you are using the browser;
+
 1. Upload a hbjson file
 2. Upload an EPW file
 3. Run the simulation
@@ -31,7 +33,6 @@ If you are using the browser:
 4. Copy the URL (E.g. `https://app.pollination.cloud/antonellodinunzio/projects/demo/jobs/acc403cf-c81a-4ca6-a9d5-cf48a77a01f2`)
 5. Delete the 'projects' keyword from the path (E.g. `https://app.pollination.cloud/antonellodinunzio/demo/jobs/acc403cf-c81a-4ca6-a9d5-cf48a77a01f2`) and copy it
 6. Paste it inside JOB ID streamlit input
-
 
 ## To run the app locally
 
