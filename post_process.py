@@ -3,7 +3,7 @@
 import streamlit as st
 from pathlib import Path
 from handlers import (
-    web, 
+    web,
     rhino,
     revit,
     sketchup,
@@ -11,21 +11,22 @@ from handlers import (
     api_cloud
 )
 
-def read(host: str, 
-    target_folder: Path):
+
+def read(host: str,
+         target_folder: Path):
 
     api_cloud.set_client_for_results(target_folder)
 
     if st.session_state.output_path:
-        if host == 'web':
+        if host.lower() == 'web':
             web.show_result()
-        elif host == 'rhino':
+        elif host.lower() == 'rhino':
             rhino.set_result()
             rhino.show_result()
-        elif host == 'revit':
+        elif host.lower() == 'revit':
             revit.set_result()
             revit.show_result()
-        elif host == 'sketchup':
+        elif host.lower() == 'sketchup':
             sketchup.set_result()
             sketchup.show_result()
         else:

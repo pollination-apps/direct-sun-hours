@@ -45,11 +45,12 @@ def main():
         login(host=host)
     if step == 1:
         get_inputs(host=host,
-            target_folder=target_folder)
+                   target_folder=target_folder)
         run_simulation()
-    elif step == 2:       
-        read(host=host, 
-            target_folder=target_folder)
+    elif step == 2:
+        read(host=host,
+             target_folder=target_folder)
+
 
 if __name__ == '__main__':
     main()

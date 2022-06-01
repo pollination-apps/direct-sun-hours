@@ -19,19 +19,16 @@ def get_model(here: pathlib.Path):
         hbjson_path.parent.mkdir(parents=True, exist_ok=True)
         hbjson_path.write_text(data)
 
-        # show the model
-        vtk_path = generate_vtk_model(hbjson_path=hbjson_path,
-            hb_model=hb_model)
-        show_vtk_viewer(vtk_path)
-
         # add to session state
         st.session_state.hbjson_path = hbjson_path
+
 
 def set_result():
     st.session_state.result_json = read_daylight_factor_results_from_folder(
         results_folder=st.session_state.results_path,
         output_folder=st.session_state.output_path,
         model=st.session_state.model_dict)
+
 
 def show_result():
     button.send(
@@ -46,4 +43,3 @@ def show_result():
         unique_id='clear-grids',
         key='clear-grids',
         platform='revit')
-    run_res_viewer()
