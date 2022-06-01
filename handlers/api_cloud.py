@@ -31,6 +31,8 @@ def set_client_for_simulation(host: str) -> ApiClient:
     st.session_state.sim_client = api_client
     st.session_state.query = query
     st.session_state.api_key = api_key
+    st.session_state.owner = query.owner
+    st.session_state.project = query.project
 
 
 def set_client_for_results(here: Path):

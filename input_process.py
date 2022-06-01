@@ -2,7 +2,7 @@
 import streamlit as st
 
 from handlers import (
-    web, 
+    web,
     rhino,
     revit,
     sketchup,
@@ -10,22 +10,24 @@ from handlers import (
     cloud_run
 )
 
+
 def get_inputs(host: str,
-    target_folder: str):
-    if host == 'web':
+               target_folder: str):
+    if host.lower() == 'web':
         web.get_model(target_folder)
-    elif host == 'rhino':
+    elif host.lower() == 'rhino':
         rhino.get_model(target_folder)
-    elif host == 'revit':
+    elif host.lower() == 'revit':
         revit.get_model(target_folder)
-    elif host == 'sketchup':
+    elif host.lower() == 'sketchup':
         sketchup.get_model(target_folder)
     else:
         return
-    
+
     wea, epw_path = shared.get_weather_file(target_folder)
     if epw_path:
         shared.set_wea_input(wea, epw_path)
+
 
 def run_simulation():
     query = st.session_state.query
@@ -38,5 +40,5 @@ def run_simulation():
         return
 
     if st.button('Run Simulation'):
-        cloud_run.run_cloud_simulation(query, client, 
-            hbjson_path, wea_path)
+        cloud_run.run_cloud_simulation(query, client,
+                                       hbjson_path, wea_path)
