@@ -14,7 +14,7 @@ def set_client_for_simulation(host: str) -> ApiClient:
         help=':bulb: You only need an API Key to access private projects. '
         'If you do not have a key already go to the settings tab under your profile to '
         'generate one.'
-        )
+    )
 
     # create a query
     query = Query(host)
@@ -27,17 +27,18 @@ def set_client_for_simulation(host: str) -> ApiClient:
     )
     api_client = ApiClient(api_token=api_key)
 
-    # add to session state 
+    # add to session state
     st.session_state.sim_client = api_client
     st.session_state.query = query
+    st.session_state.api_key = api_key
 
 
 def set_client_for_results(here: Path):
-    api_client = ApiClient()
+    api_client = ApiClient(api_token=st.session_state.api_key)
     job = job_selector(api_client)
     if job:
-        viz_file, results_path, model_dict, output_path = post_process_job(job, 
-            here=here)
+        viz_file, results_path, model_dict, output_path = post_process_job(job,
+                                                                           here=here)
         st.session_state.viz_file = viz_file
         st.session_state.results_path = results_path
         st.session_state.model_dict = model_dict
