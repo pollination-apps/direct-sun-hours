@@ -4,16 +4,16 @@ import json
 import pathlib
 import streamlit as st
 from honeybee.model import Model
-from pollination_streamlit_io import special, button
+from pollination_streamlit_io import get_hbjson, send_results
 from .shared import generate_vtk_model, show_vtk_viewer, run_res_viewer
 from .read_results import read_daylight_factor_results_from_folder
 
 
 # ADN: @Konrad can you check this? :)
 def get_model(here: pathlib.Path):
-    data = special.get_hbjson(key='my-revit-json')
+    data = get_hbjson(key='my-revit-json')
     if data:
-        model_data = json.loads(data)
+        model_data = json.loads(data['hbjson'])
         hb_model = Model.from_dict(model_data)
         hbjson_path = pathlib.Path(f'./{here}/data/{hb_model.identifier}.hbjson')
         hbjson_path.parent.mkdir(parents=True, exist_ok=True)
@@ -31,15 +31,6 @@ def set_result():
 
 
 def show_result():
-    button.send(
-        action='AddResults',
-        data=st.session_state.result_json,
-        unique_id='bake-grids',
-        key='bake-grids',
-        platform='revit')
-    button.send(
-        action='ClearResults',
-        data=st.session_state.result_json,
-        unique_id='clear-grids',
-        key='clear-grids',
-        platform='revit')
+    send_results(
+        geometry=st.session_state.result_json,
+        key='bake-grids')

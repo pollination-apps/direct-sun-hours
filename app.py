@@ -10,7 +10,7 @@ from introduction import login
 from input_process import get_inputs, run_simulation
 from post_process import read
 # integration
-from pollination_streamlit_io import special
+from pollination_streamlit_io import get_host
 
 
 st.set_page_config(
@@ -28,7 +28,7 @@ def main():
     bootstrap.initialize()
 
     # find the host the app is being run inside
-    host = special.get_host() or 'web'
+    host = get_host() or 'web'
 
     # title
     st.title('Direct sun hour app ☀️')
