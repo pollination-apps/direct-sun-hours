@@ -8,6 +8,8 @@ def initialize():
         st.session_state.query = None
     if 'sim_client' not in st.session_state:
         st.session_state.sim_client = None
+    if 'api_key' not in st.session_state:
+        st.session_state.api_key = None
     if 'hbjson_path' not in st.session_state:
         st.session_state.hbjson_path = None
     if 'wea_path' not in st.session_state:

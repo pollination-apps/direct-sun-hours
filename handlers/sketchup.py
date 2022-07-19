@@ -5,7 +5,6 @@ import pathlib
 import streamlit as st
 from honeybee.model import Model
 from pollination_streamlit_io import get_hbjson, send_geometry, send_hbjson
-from .shared import generate_vtk_model, show_vtk_viewer, run_res_viewer
 from .read_results import create_analytical_mesh
 
 def get_model(here: pathlib.Path):

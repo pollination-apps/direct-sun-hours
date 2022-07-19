@@ -52,8 +52,8 @@ def run_cloud_simulation(query: Query,
     return job.id
 
 
-def post_process_job(job: Job, here: pathlib.Path):
-    data_folder = here.joinpath('data')
+def post_process_job(job: Job, here: str):
+    data_folder = pathlib.Path(here).joinpath('data')
     data_folder.mkdir(exist_ok=True)
 
     run = job.runs[0]
