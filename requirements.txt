@@ -4,3 +4,4 @@ extra_streamlit_components>=0.1.53
 pollination-streamlit-io==0.31.2
 pollination_streamlit==0.2.1
 honeybee-radiance>=1.64.15
+lbt-recipes==0.22.8

@@ -14,20 +14,21 @@ from handlers import (
 
 def read(host: str,
          target_folder: Path):
-
     api_cloud.set_client_for_results(target_folder)
-
     if st.session_state.output_path:
-        if host.lower() == 'web':
-            web.show_result()
-        elif host.lower() == 'rhino':
-            rhino.set_result()
-            rhino.show_result()
-        elif host.lower() == 'revit':
-            revit.set_result()
-            revit.show_result()
-        elif host.lower() == 'sketchup':
-            sketchup.set_result()
-            sketchup.show_result()
-        else:
-            return
+        show_result(host)
+
+def show_result(host):
+    if host.lower() == 'web':
+        web.show_result()
+    elif host.lower() == 'rhino':
+        rhino.set_result()
+        rhino.show_result()
+    elif host.lower() == 'revit':
+        revit.set_result()
+        revit.show_result()
+    elif host.lower() == 'sketchup':
+        sketchup.set_result()
+        sketchup.show_result()
+    else:
+        return

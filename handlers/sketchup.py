@@ -19,11 +19,7 @@ def get_model(here: pathlib.Path):
         hbjson_path.parent.mkdir(parents=True, exist_ok=True)
         hbjson_path.write_text(json.dumps(hb_model.to_dict()))
 
-        # show the model
-        vtk_path = generate_vtk_model(hbjson_path=hbjson_path,
-            hb_model=hb_model)
-        show_vtk_viewer(vtk_path)
-
+        st.success('Model linked')
         # add to session state
         st.session_state.hbjson_path = hbjson_path
 

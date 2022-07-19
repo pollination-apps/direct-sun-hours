@@ -7,7 +7,8 @@ from handlers import (
     revit,
     sketchup,
     shared,
-    cloud_run
+    cloud_run,
+    local_run
 )
 
 
@@ -29,7 +30,7 @@ def get_inputs(host: str,
         shared.set_wea_input(wea, epw_path)
 
 
-def run_simulation():
+def run_cloud_simulation():
     query = st.session_state.query
     client = st.session_state.sim_client
     hbjson_path = st.session_state.hbjson_path
@@ -42,3 +43,16 @@ def run_simulation():
     if st.button('Run Simulation'):
         cloud_run.run_cloud_simulation(query, client,
                                        hbjson_path, wea_path)
+
+def run_local_simulation(target_folder: str):
+    hbjson_path = st.session_state.hbjson_path
+    wea_path = st.session_state.wea_path
+
+    # no last step wea
+    if not wea_path:
+        return
+
+    if st.button('Run Simulation'):
+        local_run.run_simulation(here=target_folder, 
+            hbjson_path=hbjson_path, 
+            wea_path=wea_path)

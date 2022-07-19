@@ -19,6 +19,7 @@ def get_model(here: pathlib.Path):
         hbjson_path.parent.mkdir(parents=True, exist_ok=True)
         hbjson_path.write_text(data)
 
+        st.success('Model linked')
         # add to session state
         st.session_state.hbjson_path = hbjson_path
 

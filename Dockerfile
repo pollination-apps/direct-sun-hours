@@ -1,8 +1,14 @@
-FROM python:3.8-slim
+FROM ladybugtools/honeybee-radiance:latest as base
 
-WORKDIR /app
-
+WORKDIR /home/ladybugbot/app
 COPY . .
-RUN pip3 --no-cache-dir install -r requirements.txt
-RUN apt-get update
-RUN apt-get install ffmpeg libsm6 libxext6 curl unzip -y
+
+USER root
+
+RUN apt-get update \
+    && apt-get install ffmpeg libsm6 libxext6 curl unzip -y \
+    && pip3 install -r requirements.txt || echo no requirements.txt file \
+    && chown -R ladybugbot /home/ladybugbot/app
+
+USER ladybugbot
+
