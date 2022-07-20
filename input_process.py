@@ -25,9 +25,7 @@ def get_inputs(host: str,
     else:
         return
 
-    wea, epw_path = shared.get_weather_file(target_folder)
-    if epw_path:
-        shared.set_wea_input(wea, epw_path)
+
 
 
 def run_cloud_simulation():
