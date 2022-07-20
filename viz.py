@@ -7,7 +7,7 @@ def get_vtk_config(folder: pathlib.Path) -> str:
     cfg = {
         "data": [
             {
-                "identifier": "Direct Sun Hours...ecotect",
+                "identifier": "Direct Sun Hours",
                 "object_type": "grid",
                 "unit": "Hour",
                 "path": folder.as_posix(),

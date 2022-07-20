@@ -7,7 +7,6 @@ from handlers import (
     rhino,
     revit,
     sketchup,
-    shared,
     api_cloud,
     local_run
 )
@@ -19,8 +18,7 @@ def read_from_cloud(host: str,
     if st.session_state.results_path:
         show_result(host)
 
-def read_from_local(host: str,
-         target_folder: Path):
+def read_from_local(host: str):
     if st.session_state.results_path:
         local_run.set_output()
         show_result(host)
