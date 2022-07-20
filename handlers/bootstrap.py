@@ -21,7 +21,5 @@ def initialize():
         st.session_state.results_path = None
     if 'model_dict' not in st.session_state: 
         st.session_state.model_dict = None
-    if 'output_path' not in st.session_state:
-        st.session_state.output_path = None
     if 'result_json' not in st.session_state:
         st.session_state.result_json = None

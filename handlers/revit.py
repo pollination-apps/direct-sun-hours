@@ -26,7 +26,7 @@ def get_model(here: pathlib.Path):
 def set_result():
     st.session_state.result_json = read_daylight_factor_results_from_folder(
         results_folder=st.session_state.results_path,
-        output_folder=st.session_state.output_path,
+        output_folder=st.session_state.results_path,
         model=st.session_state.model_dict)
 
 

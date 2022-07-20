@@ -1,8 +1,7 @@
 import json
 import pathlib
 
-def get_vtk_config(results_path: str, 
-    folder: pathlib.Path) -> str:
+def get_vtk_config(folder: pathlib.Path) -> str:
     '''Write Direct Sun Hours config to a folder.'''
 
     cfg = {
@@ -11,7 +10,7 @@ def get_vtk_config(results_path: str,
                 "identifier": "Direct Sun Hours...ecotect",
                 "object_type": "grid",
                 "unit": "Hour",
-                "path": results_path,
+                "path": folder.as_posix(),
                 "hide": False,
                 "legend_parameters": {
                     "hide_legend": False,
