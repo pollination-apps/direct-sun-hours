@@ -23,7 +23,7 @@ def generate_vtk_model(hbjson_path: Path,
         SensorGridOptions.Sensors).to_vtkjs(
         folder=hbjson_path.parent, name=hb_model.identifier)
     
-    viewer(content=Path(vtk_path).read_bytes(), key='vtk_preview_model')
+    # viewer(content=Path(vtk_path).read_bytes(), key='vtk_preview_model')
 
 def get_weather_file(here: Path):
     # upload weather file

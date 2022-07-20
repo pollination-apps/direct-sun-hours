@@ -3,7 +3,7 @@
 import streamlit as st
 from helper import local_css
 # steps
-from handlers import bootstrap
+from handlers import bootstrap, shared
 from introduction import login
 from input_process import get_inputs, run_cloud_simulation, run_local_simulation
 from post_process import read_from_cloud, read_from_local
@@ -48,7 +48,13 @@ def main():
         'Hello👋! What do you want to do?',
         LAYOUT_OPTIONS.values())
     
+    get_inputs(host=host,
+                target_folder=target_folder)
+    
     if option == LAYOUT_OPTIONS[0]:
+        wea, epw_path = shared.get_weather_file(target_folder)
+        if epw_path:
+            shared.set_wea_input(wea, epw_path)
         layout_selector(host=host, 
             target_folder=target_folder)
     else:
@@ -67,13 +73,9 @@ def layout_selector(host,
 def layout_server_run(host, target_folder):
     # login part
     login(host=host)
-    get_inputs(host=host,
-                target_folder=target_folder)
     run_cloud_simulation()
 
 def layout_local_run(host, target_folder):
-    get_inputs(host=host,
-                target_folder=target_folder)
     run_local_simulation(target_folder=target_folder)
     read_from_local(host=host)
 
