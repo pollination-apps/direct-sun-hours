@@ -55,6 +55,7 @@ def set_output():
     res_folder = pathlib.Path(st.session_state.results_path)
 
     viz_file = get_vtk_model_result(st.session_state.model_dict,
+        res_folder,
         res_folder)
     
     st.session_state.viz_file = viz_file
