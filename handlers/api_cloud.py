@@ -44,4 +44,3 @@ def set_client_for_results(here: Path):
         st.session_state.viz_file = viz_file
         st.session_state.results_path = results_path
         st.session_state.model_dict = model_dict
-        st.session_state.output_path = output_path

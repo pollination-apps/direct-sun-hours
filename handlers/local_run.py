@@ -9,6 +9,8 @@ from honeybee.model import Model
 from ladybug.wea import Wea
 from honeybee_radiance.config import folders as rad_folders
 
+from handlers.shared import get_vtk_model_result
+
 def run_simulation(
     here: str,
     hbjson_path: pathlib.Path,
@@ -47,3 +49,12 @@ def run_simulation(
 
     st.session_state.results_path = f'{project_folder}/direct_sun_hours/results/cumulative'
     st.session_state.model_dict = model_data
+
+
+def set_output():
+    res_folder = pathlib.Path(st.session_state.results_path)
+
+    viz_file = get_vtk_model_result(st.session_state.model_dict,
+        res_folder)
+    
+    st.session_state.viz_file = viz_file

@@ -8,14 +8,21 @@ from handlers import (
     revit,
     sketchup,
     shared,
-    api_cloud
+    api_cloud,
+    local_run
 )
 
 
-def read(host: str,
+def read_from_cloud(host: str,
          target_folder: Path):
     api_cloud.set_client_for_results(target_folder)
-    if st.session_state.output_path:
+    if st.session_state.results_path:
+        show_result(host)
+
+def read_from_local(host: str,
+         target_folder: Path):
+    if st.session_state.results_path:
+        local_run.set_output()
         show_result(host)
 
 def show_result(host):
