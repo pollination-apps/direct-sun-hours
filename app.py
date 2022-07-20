@@ -5,7 +5,7 @@ from helper import local_css
 # steps
 from handlers import bootstrap, shared
 from introduction import login
-from input_process import get_inputs, run_cloud_simulation, run_local_simulation
+from input_process import get_model, run_cloud_simulation, run_local_simulation
 from post_process import read_from_cloud, read_from_local
 # integration
 from pollination_streamlit_io import get_host
@@ -48,13 +48,14 @@ def main():
         'Hello👋! What do you want to do?',
         LAYOUT_OPTIONS.values())
     
-    get_inputs(host=host,
-                target_folder=target_folder)
+    
     
     if option == LAYOUT_OPTIONS[0]:
         wea, epw_path = shared.get_weather_file(target_folder)
         if epw_path:
             shared.set_wea_input(wea, epw_path)
+        
+        get_model(target_folder=target_folder)
         layout_selector(host=host, 
             target_folder=target_folder)
     else:

@@ -66,6 +66,7 @@ def post_process_job(job: Job, here: str):
     model_dict = json.load(job.download_artifact(input_model_path))
 
     viz_file = get_vtk_model_result(model_dict,
-        simulation_folder)
+        simulation_folder,
+        simulation_folder.joinpath('results'))
 
     return viz_file, res_folder.as_posix(), model_dict, simulation_folder

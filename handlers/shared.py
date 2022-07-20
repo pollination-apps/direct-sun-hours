@@ -71,9 +71,11 @@ def set_wea_input(wea: Wea, epw_path: Path):
     st.session_state.wea_path = wea_path
 
 def get_vtk_model_result(model_dict: dict, 
-    simulation_folder: pathlib.Path):
+    simulation_folder: pathlib.Path,
+    values_path: pathlib.Path):
     # load the configuration file
-    cfg_file = get_vtk_config(folder=simulation_folder.resolve())
+    cfg_file = get_vtk_config(folder=simulation_folder.resolve(),
+        values_path=values_path)
 
     # write the visualization file (vtkjs)
     viz_file = simulation_folder.joinpath('model.vtkjs')
