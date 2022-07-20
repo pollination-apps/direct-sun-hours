@@ -37,7 +37,7 @@ def run_cloud_simulation():
     wea_path = st.session_state.wea_path
 
     # no login or last step wea
-    if not query and not wea_path:
+    if not hbjson_path and not wea_path:
         return
 
     if st.button('Run Simulation'):

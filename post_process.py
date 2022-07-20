@@ -19,16 +19,17 @@ def read(host: str,
         show_result(host)
 
 def show_result(host):
-    if host.lower() == 'web':
-        web.show_result()
-    elif host.lower() == 'rhino':
-        rhino.set_result()
-        rhino.show_result()
-    elif host.lower() == 'revit':
-        revit.set_result()
-        revit.show_result()
-    elif host.lower() == 'sketchup':
-        sketchup.set_result()
-        sketchup.show_result()
-    else:
-        return
+    if st.session_state.results_path:
+        if host.lower() == 'web':
+            web.show_result()
+        elif host.lower() == 'rhino':
+            rhino.set_result()
+            rhino.show_result()
+        elif host.lower() == 'revit':
+            revit.set_result()
+            revit.show_result()
+        elif host.lower() == 'sketchup':
+            sketchup.set_result()
+            sketchup.show_result()
+        else:
+            return

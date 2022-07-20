@@ -2,6 +2,7 @@
 
 from enum import Enum
 import json
+from handlers.shared import get_vtk_model_result
 from viz import get_vtk_config
 import zipfile
 import pathlib
@@ -59,8 +60,8 @@ def post_process_job(job: Job, here: str):
     run = job.runs[0]
     input_model_path = job.runs_dataframe.dataframe['model'][0]
 
-    output_folder = pathlib.Path(data_folder, run.id)
-    res_folder = output_folder.joinpath('results')
+    simulation_folder = pathlib.Path(data_folder, run.id)
+    res_folder = simulation_folder.joinpath('results')
     res_folder.mkdir(parents=True, exist_ok=True)
 
     # download results
@@ -70,20 +71,8 @@ def post_process_job(job: Job, here: str):
 
     model_dict = json.load(job.download_artifact(input_model_path))
 
-    # load the configuration file
-    cfg_file = get_vtk_config(res_folder.as_posix(),
-                              output_folder.resolve())
+    viz_file = get_vtk_model_result(model_dict,
+        simulation_folder,
+        res_folder)
 
-    # write the visualization file (vtkjs)
-    viz_file = output_folder.joinpath('model.vtkjs')
-
-    # load model and results and save them as a vtkjs file
-    hb_model = HBModel.from_dict(model_dict)
-    if not viz_file.is_file():
-        model = VTKModel(hb_model, SensorGridOptions.Mesh)
-        model.to_vtkjs(
-            folder=viz_file.parent, config=cfg_file,
-            model_display_mode=DisplayMode.Wireframe
-        )
-
-    return viz_file, res_folder.as_posix(), model_dict, output_folder
+    return viz_file, res_folder.as_posix(), model_dict, simulation_folder
