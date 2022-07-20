@@ -3,17 +3,11 @@
 from enum import Enum
 import json
 from handlers.shared import get_vtk_model_result
-from viz import get_vtk_config
 import zipfile
 import pathlib
 from .query import Query
 from pollination_streamlit.api.client import ApiClient
 from pollination_streamlit.interactors import Job, NewJob, Recipe
-from queenbee.job.job import JobStatusEnum
-from honeybee_vtk.model import (HBModel,
-                                Model as VTKModel,
-                                SensorGridOptions,
-                                DisplayMode)
 
 
 class SimStatus(Enum):

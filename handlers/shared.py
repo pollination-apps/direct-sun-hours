@@ -10,6 +10,7 @@ from ladybug.analysisperiod import AnalysisPeriod
 from streamlit_vtkjs import st_vtkjs
 from ladybug.wea import Wea
 from viz import get_vtk_config
+from pollination_streamlit_viewer import viewer
 from honeybee_vtk.model import (HBModel,
                                 Model as VTKModel,
                                 SensorGridOptions,
@@ -22,13 +23,7 @@ def generate_vtk_model(hbjson_path: Path,
         SensorGridOptions.Sensors).to_vtkjs(
         folder=hbjson_path.parent, name=hb_model.identifier)
     
-    return vtk_path
-
-def show_vtk_viewer(vtk_path: str):
-    st_vtkjs(
-        content=Path(vtk_path).read_bytes(),
-        key='vtk_preview_model'
-    )
+    viewer(content=Path(vtk_path).read_bytes(), key='vtk_preview_model')
 
 def get_weather_file(here: Path):
     # upload weather file
@@ -96,5 +91,5 @@ def get_vtk_model_result(model_dict: dict,
 
 def run_res_viewer():
     if st.session_state.viz_file.is_file():
-        st_vtkjs(content=st.session_state.viz_file.read_bytes(),
-            key='vtk-viewer', subscribe=False)
+        viewer(content=st.session_state.viz_file.read_bytes(), 
+        key='vtk_result_model')

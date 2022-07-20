@@ -4,7 +4,7 @@ import json
 import pathlib
 import streamlit as st
 from honeybee.model import Model
-from .shared import generate_vtk_model, show_vtk_viewer, run_res_viewer
+from .shared import generate_vtk_model, run_res_viewer
 
 def get_model(here: pathlib.Path):
     hbjson_file = st.file_uploader(
@@ -19,9 +19,8 @@ def get_model(here: pathlib.Path):
         model_data = json.loads(data)
         hb_model = Model.from_dict(model_data)
 
-        vtk_path = generate_vtk_model(hbjson_path=hbjson_path,
+        generate_vtk_model(hbjson_path=hbjson_path,
             hb_model=hb_model)
-        show_vtk_viewer(vtk_path)
 
         # add to session state
         st.session_state.hbjson_path = hbjson_path

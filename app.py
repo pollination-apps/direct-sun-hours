@@ -6,7 +6,7 @@ from helper import local_css
 from handlers import bootstrap
 from introduction import login
 from input_process import get_inputs, run_cloud_simulation, run_local_simulation
-from post_process import read_from_cloud, read_from_local, show_result
+from post_process import read_from_cloud, read_from_local
 # integration
 from pollination_streamlit_io import get_host
 
@@ -75,8 +75,7 @@ def layout_local_run(host, target_folder):
     get_inputs(host=host,
                 target_folder=target_folder)
     run_local_simulation(target_folder=target_folder)
-    read_from_local(host=host,
-         target_folder=target_folder)
+    read_from_local(host=host)
 
 if __name__ == '__main__':
     main()
