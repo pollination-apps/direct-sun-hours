@@ -9,6 +9,12 @@ from honeybee_vtk.vtkjs.schema import SensorGridOptions
 from ladybug.analysisperiod import AnalysisPeriod
 from streamlit_vtkjs import st_vtkjs
 from ladybug.wea import Wea
+from viz import get_vtk_config
+from honeybee_vtk.model import (HBModel,
+                                Model as VTKModel,
+                                SensorGridOptions,
+                                DisplayMode)
+
 
 def generate_vtk_model(hbjson_path: Path,
     hb_model: Model) -> str:
@@ -68,6 +74,27 @@ def set_wea_input(wea: Wea, epw_path: Path):
 
     # add to session state
     st.session_state.wea_path = wea_path
+
+def get_vtk_model_result(model_dict: dict, 
+    simulation_folder: pathlib.Path,
+    res_folder: pathlib.Path):
+    # load the configuration file
+    cfg_file = get_vtk_config(res_folder.as_posix(),
+                              simulation_folder.resolve())
+
+    # write the visualization file (vtkjs)
+    viz_file = simulation_folder.joinpath('model.vtkjs')
+
+    # load model and results and save them as a vtkjs file
+    hb_model = HBModel.from_dict(model_dict)
+    if not viz_file.is_file():
+        model = VTKModel(hb_model, SensorGridOptions.Mesh)
+        model.to_vtkjs(
+            folder=viz_file.parent, config=cfg_file,
+            model_display_mode=DisplayMode.Wireframe
+        )
+    
+    return viz_file
 
 def run_res_viewer():
     if st.session_state.viz_file.is_file():

@@ -7,9 +7,9 @@ from pollination_streamlit.api.client import ApiClient
 from pollination_streamlit.selectors import job_selector
 from .cloud_run import post_process_job
 
-
 def set_client_for_simulation(host: str) -> ApiClient:
-    api_key = st.text_input(
+    # TODO: replace components with auth pollination-streamlit-io
+    api_key = st.sidebar.text_input(
         'Enter Pollination APIKEY', type='password',
         help=':bulb: You only need an API Key to access private projects. '
         'If you do not have a key already go to the settings tab under your profile to '
@@ -18,11 +18,11 @@ def set_client_for_simulation(host: str) -> ApiClient:
 
     # create a query
     query = Query(host)
-    query.owner = st.text_input(
+    query.owner = st.sidebar.text_input(
         'Project Owner', value=query.owner
     )
 
-    query.project = st.text_input(
+    query.project = st.sidebar.text_input(
         'Project Name', value=query.project
     )
     api_client = ApiClient(api_token=api_key)
