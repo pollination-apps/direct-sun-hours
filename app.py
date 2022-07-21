@@ -1,15 +1,6 @@
-"""Direct sun hour app."""
-# generic
 import streamlit as st
-from helper import local_css
-# steps
-from handlers import bootstrap, shared
-from introduction import login
-from input_process import get_model, run_cloud_simulation, run_local_simulation
-from post_process import read_from_cloud, read_from_local
-# integration
-from pollination_streamlit_io import get_host
-
+from inputs import initialize, get_api_inputs
+from pollination_streamlit_io import get_host 
 
 st.set_page_config(
     page_title='Direct Sun Hours',
@@ -22,63 +13,18 @@ st.sidebar.image(
     use_column_width=True
 )
 
-LAYOUT_OPTIONS = {
-    0: 'Create a new study',
-    1: 'Visualize an existing study'
-}
-
-def main():
-    # load local css
-    local_css('style.css')
-
-    # bootstrap session variables
-    bootstrap.initialize()
-
-    # find the host the app is being run inside
-    host = get_host() or 'web'
-
+def main(platform):
+    """Perform sunlight hours simulations."""
     # title
-    st.title('Direct sun hour app ☀️')
+    st.header('Sunlight hours')
+    st.markdown("""---""")  # horizontal divider line between title and input
 
-    # common paths
-    target_folder = "/home/ladybugbot/app"
+    # initialize the app and load up all of the inputs
+    initialize()
+    sidebar_container = st.container()  # container to hold the inputs
+    get_api_inputs(platform, sidebar_container)
 
-    # layout selection
-    option = st.selectbox(
-        'Hello👋! What do you want to do?',
-        LAYOUT_OPTIONS.values())
-    
-    
-    
-    if option == LAYOUT_OPTIONS[0]:
-        wea, epw_path = shared.get_weather_file(target_folder)
-        if epw_path:
-            shared.set_wea_input(wea, epw_path)
-        
-        get_model(target_folder=target_folder)
-        layout_selector(host=host, 
-            target_folder=target_folder)
-    else:
-        read_from_cloud(host=host,
-            target_folder=target_folder)
-
-def layout_selector(host, 
-    target_folder):
-    run_mode = st.radio(
-    "Run on cloud", ('Yes', 'No'))
-    if run_mode == 'Yes':
-        layout_server_run(host, target_folder)    
-    else:
-        layout_local_run(host, target_folder)
-
-def layout_server_run(host, target_folder):
-    # login part
-    login(host=host)
-    run_cloud_simulation()
-
-def layout_local_run(host, target_folder):
-    run_local_simulation(target_folder=target_folder)
-    read_from_local(host=host)
 
 if __name__ == '__main__':
-    main()
+    platform = get_host() or 'web'
+    main(platform)

@@ -3,6 +3,10 @@
 import streamlit as st
 
 def initialize():
+    if 'target_folder' not in st.session_state:
+        st.session_state.target_folder = "/home/ladybugbot/app"
+    if 'valid_report' not in st.session_state:
+        st.session_state.valid_report = None
     # sim session
     if 'query' not in st.session_state:
         st.session_state.query = None
