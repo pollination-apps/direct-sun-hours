@@ -31,7 +31,7 @@ def run_local_study(
         recipe.input_value_by_name('wea', wea)
         recipe.input_value_by_name('grid-filter', grid_filter)
 
-        simulation_path = pathlib.Path(f'{here}/simulation')
+        simulation_path = pathlib.Path(f'{here}/local_simulation')
         simulation_path.mkdir(parents=True, exist_ok=True)
 
         # set rad folder

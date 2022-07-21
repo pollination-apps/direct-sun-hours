@@ -20,7 +20,8 @@ def initialize():
     if 'user_id' not in st.session_state:
         st.session_state.user_id = str(uuid.uuid4())[:8]
     if 'target_folder' not in st.session_state:
-        st.session_state.target_folder = Path('/home/ladybugbot/app').resolve()
+        st.session_state.target_folder = Path(__file__).parent.joinpath(
+            'data', f'{st.session_state.user_id}').resolve()
     if 'valid_report' not in st.session_state:
         st.session_state.valid_report = None
     # sim session
@@ -109,10 +110,7 @@ def get_model(column):
 def generate_vtk_model(hb_model: Model, container):
     """Generate a VTK preview of an input model."""
     if not st.session_state.vtk_path:
-        directory = os.path.join(
-            st.session_state.target_folder.as_posix(),
-            'data', st.session_state.user_id
-        )
+        directory = st.session_state.target_folder
         if not os.path.isdir(directory):
             os.makedirs(directory)
         hbjson_path = hb_model.to_hbjson(hb_model.identifier, directory)
@@ -147,10 +145,7 @@ def new_weather_file():
     epw_file = st.session_state.epw_data
     if epw_file:
         # save EPW in data folder
-        epw_path = Path(
-            f'./{st.session_state.target_folder}/data/'
-            f'{st.session_state.user_id}/{epw_file.name}'
-        )
+        epw_path = st.session_state.target_folder.joinpath(f'{epw_file.name}')
         epw_path.parent.mkdir(parents=True, exist_ok=True)
         epw_path.write_bytes(epw_file.read())
         # create a WEA file from the EPW
