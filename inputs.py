@@ -13,7 +13,7 @@ from honeybee_vtk.model import Model as VTKModel
 from pollination_streamlit_viewer import viewer
 from ladybug.wea import Wea
 from ladybug.analysisperiod import AnalysisPeriod
-from simulation import run_local_study
+from simulation import run_local_study, run_cloud_study
 
 def initialize():
     """ Initialize any of the session state variables if they don't already exist. """
@@ -87,6 +87,7 @@ def new_model():
     """Process a newly-uploaded Honeybee Model file."""
     # reset the simulation results and get the file data
     st.session_state.vtk_path = None
+    st.session_state.hbjson_path = None
     st.session_state.valid_report = None
 
     st.session_state.result_json = None
@@ -95,6 +96,15 @@ def new_model():
     if 'hbjson' in st.session_state['hbjson_data']:
         hbjson_data = st.session_state['hbjson_data']['hbjson']
         st.session_state.hb_model = Model.from_dict(hbjson_data)
+
+        # write hbjson
+        directory = st.session_state.target_folder
+        if not os.path.isdir(directory):
+            os.makedirs(directory)
+        hbjson_path = st.session_state.hb_model.to_hbjson(
+            st.session_state.hb_model.identifier,
+            directory)
+        st.session_state.hbjson_path = hbjson_path
 
 
 def get_model(column):
@@ -110,12 +120,9 @@ def get_model(column):
 def generate_vtk_model(hb_model: Model, container):
     """Generate a VTK preview of an input model."""
     if not st.session_state.vtk_path:
-        directory = st.session_state.target_folder
-        if not os.path.isdir(directory):
-            os.makedirs(directory)
-        hbjson_path = hb_model.to_hbjson(hb_model.identifier, directory)
-        vtk_model = VTKModel.from_hbjson(hbjson_path)
-        vtk_path = vtk_model.to_vtkjs(folder=directory, name=hb_model.identifier)
+        vtk_model = VTKModel.from_hbjson(st.session_state.hbjson_path)
+        vtk_path = vtk_model.to_vtkjs(folder=st.session_state.target_folder, 
+            name=hb_model.identifier)
         st.session_state.vtk_path = vtk_path
     vtk_path = st.session_state.vtk_path
     with container:
@@ -287,9 +294,15 @@ def get_inputs(host: str, container):
                     st.warning('Please, check API data on the sidebar.')
                     return
                 else:
+                    # job_id = run_cloud_study(
+                    #     query=st.session_state.query,
+                    #     api_client=st.session_state.sim_client,
+                    #     model_path=st.session_state.hbjson_path,
+                    #     wea_path=st.session_state.wea_path)
                     pass
             else:
-                status, error = run_local_study(st.session_state.target_folder,
+                status, error = run_local_study(
+                    st.session_state.target_folder,
                     st.session_state.hb_model,
                     st.session_state.wea_path)
                 if status:
