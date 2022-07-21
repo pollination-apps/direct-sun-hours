@@ -1,5 +1,6 @@
 """ A module to run local calculation. """
 
+import json
 import pathlib
 import streamlit as st
 from typing import Optional
@@ -11,7 +12,8 @@ from honeybee_radiance.config import folders as rad_folders
 from pollination_streamlit.api.client import ApiClient
 from pollination_streamlit.interactors import Recipe as ItRecipe
 from pollination_streamlit.interactors import NewJob
-
+from pollination_streamlit.selectors import job_selector
+import zipfile
 
 def run_local_study(
         here: str,
@@ -86,3 +88,28 @@ def run_cloud_study(query: Query,
     except Exception as e:
         st.session_state.results_path = None
         return None, e
+
+
+def cloud_result_output(host: str):
+    api_client = ApiClient(api_token=st.session_state.api_key)
+    job = job_selector(api_client) # is a st.text_input
+
+    if job and job.id != st.session_state.job_id:
+        st.session_state.job_id = job.id
+
+        run = job.runs[0]
+        input_model_path = job.runs_dataframe.dataframe['model'][0]
+
+        simulation_folder = pathlib.Path(st.session_state.target_folder, 
+            run.id)
+        res_folder = simulation_folder.joinpath('cloud_results')
+        res_folder.mkdir(parents=True, exist_ok=True)
+
+        # download results
+        res_zip = run.download_zipped_output('cumulative-sun-hours')
+        with zipfile.ZipFile(res_zip) as zip_folder:
+            zip_folder.extractall(res_folder.as_posix())
+
+        model_dict = json.load(job.download_artifact(input_model_path))
+
+        st.session_state.results_path = res_folder
