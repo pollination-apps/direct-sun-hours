@@ -1,5 +1,5 @@
 import streamlit as st
-from inputs import initialize, get_api_inputs, get_model_inputs
+from inputs import initialize, get_api_inputs, get_inputs
 from pollination_streamlit_io import get_host 
 
 st.set_page_config(
@@ -28,7 +28,7 @@ def main(platform):
 
     # body
     in_container = st.container()
-    get_model_inputs(platform, in_container)
+    get_inputs(platform, in_container)
 
 
 if __name__ == '__main__':
