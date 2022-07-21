@@ -49,11 +49,13 @@ def run_local_study(
     
         project_folder = recipe.run(f'--workers 16 --folder {simulation_path.as_posix()}',
             radiance_check=True)
-        st.session_state.results_path = f'{project_folder}/direct_sun_hours/results/cumulative'
+        st.session_state.result_path = pathlib.Path(f'{project_folder}/direct_sun_hours/results/cumulative')
+        st.session_state.hb_model_dict = hb_model.to_dict()
         return True, None
         
     except Exception as e:
-        st.session_state.results_path = None
+        st.session_state.result_path = None
+        st.session_state.hb_model_dict = None
         return False, e
 
 
@@ -96,40 +98,46 @@ def run_cloud_study(query: Query,
 def cloud_outputs(host: str, container):
     api_client = ApiClient(api_token=st.session_state.api_key)
     with container:
-        job = job_selector(api_client) # is a st.text_input
-        if job and job.id != st.session_state.job_id:
-            st.session_state.job_id = job.id
+        if st.session_state.is_cloud:
+            job = job_selector(api_client) # is a st.text_input
+            if job and job.id != st.session_state.job_id:
+                st.session_state.job_id = job.id
 
-            run = job.runs[0]
-            input_model_path = job.runs_dataframe.dataframe['model'][0]
+                run = job.runs[0]
+                input_model_path = job.runs_dataframe.dataframe['model'][0]
 
-            simulation_folder = pathlib.Path(st.session_state.target_folder, 
-                run.id)
-            res_folder = simulation_folder.joinpath('cloud_results')
-            res_folder.mkdir(parents=True, exist_ok=True)
+                simulation_folder = pathlib.Path(st.session_state.target_folder, 
+                    run.id)
+                res_folder = simulation_folder.joinpath('cloud_results')
+                res_folder.mkdir(parents=True, exist_ok=True)
 
-            # download results
-            res_zip = run.download_zipped_output('cumulative-sun-hours')
-            with zipfile.ZipFile(res_zip) as zip_folder:
-                zip_folder.extractall(res_folder.as_posix())
+                # download results
+                res_zip = run.download_zipped_output('cumulative-sun-hours')
+                with zipfile.ZipFile(res_zip) as zip_folder:
+                    zip_folder.extractall(res_folder.as_posix())
 
-            model_dict = json.load(job.download_artifact(input_model_path))
-            st.session_state.hb_model_dict = model_dict
-            st.session_state.result_path = res_folder
+                model_dict = json.load(job.download_artifact(input_model_path))
+                st.session_state.hb_model_dict = model_dict
+                st.session_state.result_path = res_folder
+         
+        viz_result(host, 
+            st.session_state.hb_model_dict, 
+            container)
 
+def viz_result(host:str, model:dict, container):
     if st.session_state.result_path:
         if host == 'web':
-            get_vtk_model_result(st.session_state.hb_model_dict, 
+            get_vtk_model_result(model, 
                 st.session_state.result_path, container)
         else:
             # generate grids
             analysis_grid = create_analytical_mesh(st.session_state.result_path, 
-                st.session_state.hb_model_dict)
+                model)
             with container:
                 send_geometry(geometry=analysis_grid,
                     key='po-grids')
                 send_hbjson(
-                    hbjson=st.session_state.hb_model_dict,
+                    hbjson=model,
                     key='po-model')
 
         
