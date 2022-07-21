@@ -23,6 +23,8 @@ def initialize():
             'data', f'{st.session_state.user_id}').resolve()
     if 'valid_report' not in st.session_state:
         st.session_state.valid_report = None
+    if 'is_cloud' not in st.session_state:
+        st.session_state.is_cloud = False
     # sim session
     if 'query' not in st.session_state:
         st.session_state.query = None
@@ -94,8 +96,8 @@ def new_model():
     st.session_state.vtk_path = None
     st.session_state.hbjson_path = None
     st.session_state.valid_report = None
-
-    st.session_state.result_json = None
+    
+    st.session_state.result_path = None
     st.session_state.vtk_result_path = None
     # load the model object from the file data
     if 'hbjson' in st.session_state['hbjson_data']:
@@ -150,7 +152,7 @@ def generate_model_validation(hb_model: Model, container):
 def new_weather_file():
     """Process a newly-uploaded EPW file."""
     # reset the simulation results and get the file data
-    st.session_state.result_json = None
+    st.session_state.result_path = None
     st.session_state.vtk_result_path = None
 
     # from key name
@@ -251,6 +253,7 @@ def get_inputs(host: str, container):
     m_col_1, m_col_2 = container.columns([2, 1])
     get_model(m_col_1)
     # add options to preview the model in 3D and validate it
+    m_col_2.checkbox(label='On Cloud', value=False, key='is_cloud')
     if st.session_state.hb_model:
         if m_col_2.checkbox(label='Preview Model', value=False):
             generate_vtk_model(st.session_state.hb_model, container)
@@ -289,13 +292,13 @@ def get_inputs(host: str, container):
                 label='End month', min_value=1, max_value=12, value=12, step=1)
             if end_month != st.session_state.end_month:
                 st.session_state.end_month = end_month
-            is_cloud = st.checkbox(label='On Cloud', value=False, 
-                key='is_cloud')
+
         submit = st.form_submit_button(label='Run Study')
         if submit:
+            st.session_state.vtk_result_path = None
             update_wea(start_hour, start_day, start_month, end_hour,
                 end_day, end_month)
-            if is_cloud:
+            if st.session_state.is_cloud:
                 if not is_api_client_valid():
                     st.warning('Please, check API data on the sidebar.')
                     return
@@ -306,7 +309,7 @@ def get_inputs(host: str, container):
                     model_path=Path(st.session_state.hbjson_path),
                     wea_path=st.session_state.wea_path)
                 if status:
-                    st.success('Done!')
+                    st.success('Done! Check on Pollination Cloud.')
                 else:
                     st.warning(error)
                     
@@ -316,6 +319,6 @@ def get_inputs(host: str, container):
                     st.session_state.hb_model,
                     st.session_state.wea_path)
                 if status:
-                    st.success('Done!')
+                    st.success('Done! Go to Read Result.')
                 else:
                     st.warning(error)
