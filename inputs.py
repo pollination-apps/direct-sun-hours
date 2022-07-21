@@ -12,6 +12,7 @@ from honeybee.model import Model
 from honeybee_vtk.model import Model as VTKModel
 from pollination_streamlit_viewer import viewer
 from ladybug.wea import Wea
+from ladybug.analysisperiod import AnalysisPeriod
 
 def initialize():
     """ Initialize any of the session state variables if they don't already exist. """
@@ -28,6 +29,8 @@ def initialize():
         st.session_state.sim_client = None
     if 'api_key' not in st.session_state:
         st.session_state.api_key = None
+    if 'epw_path' not in st.session_state:
+        st.session_state.epw_path = None
     if 'wea_path' not in st.session_state:
         st.session_state.wea_path = None
     if 'hbjson_path' not in st.session_state:
@@ -36,6 +39,19 @@ def initialize():
         st.session_state.vtk_path = None
     if 'hb_model' not in st.session_state:
         st.session_state.hb_model = None
+    # analysis period
+    if 'start_hour' not in st.session_state:
+        st.session_state.start_hour = None
+    if 'start_day' not in st.session_state:
+        st.session_state.start_day = None
+    if 'start_month' not in st.session_state:
+        st.session_state.start_month = None
+    if 'end_hour' not in st.session_state:
+        st.session_state.end_hour = None
+    if 'end_day' not in st.session_state:
+        st.session_state.end_day = None
+    if 'end_month' not in st.session_state:
+        st.session_state.end_month = None
     # results session
     if 'vtk_result_path' not in st.session_state:
         st.session_state.vtk_result_path = None
@@ -136,15 +152,32 @@ def new_weather_file():
         )
         epw_path.parent.mkdir(parents=True, exist_ok=True)
         epw_path.write_bytes(epw_file.read())
-        # create a WEA file from the EPW
-        wea_file = epw_path.as_posix().replace('.epw', '.wea')
-        wea = Wea.from_epw_file(epw_file=epw_path)
-        wea.write(wea_file)
-        wea_path = Path(wea_file)
         # set the session state variables
-        st.session_state.wea_path = wea_path
+        st.session_state.epw_path = epw_path
     else:
         st.session_state.wea_path = None
+
+
+def apply_analysis_period():
+    period = AnalysisPeriod(
+        st_month=st.session_state.start_month or 1,
+        st_day=st.session_state.start_day or 1, 
+        st_hour=st.session_state.start_hour or 0, 
+        end_hour=st.session_state.end_hour or 23,
+        end_day=st.session_state.end_day or 31, 
+        end_month=st.session_state.end_month or 12)
+
+    # read from file
+    if st.session_state.epw_path:
+        # create a WEA file from the EPW
+        wea_file = st.session_state.epw_path.as_posix().replace('.epw', '.wea')
+        wea = Wea.from_epw_file(epw_file=st.session_state.epw_path)
+        wea = wea.filter_by_hoys(period.hoys)
+        wea.write(wea_file)
+        wea_path = Path(wea_file)
+        
+        # save wea
+        st.session_state.wea_path = wea_path
 
 
 def get_weather_file(column):
@@ -188,6 +221,34 @@ def get_inputs(host: str, container):
             generate_model_validation(st.session_state.hb_model, container)
 
     # get the input EPW and WEA files
-    w_col_1, w_col_2 = container.columns([2, 1])
+    w_col_1, w_col_2, w_col_3 = container.columns([3, 1, 1])
     get_weather_file(w_col_1)
 
+    start_hour = w_col_2.number_input(
+        label='Start hour', min_value=0, max_value=23, value=0, step=1)
+    if start_hour != st.session_state.start_hour:
+        st.session_state.start_hour = start_hour
+    start_day = w_col_2.number_input(
+        label='Start day', min_value=1, max_value=31, value=1, step=1)
+    if start_day != st.session_state.start_day:
+        st.session_state.start_day = start_day
+    start_month = w_col_2.number_input(
+        label='Start month', min_value=1, max_value=12, value=1, step=1)
+    if start_month != st.session_state.start_month:
+        st.session_state.start_month = start_month  
+    
+    end_hour = w_col_3.number_input(
+        label='End hour', min_value=0, max_value=23, value=23, step=1)
+    if end_hour != st.session_state.end_hour:
+        st.session_state.end_hour = end_hour
+    end_day = w_col_3.number_input(
+        label='End day', min_value=1, max_value=31, value=31, step=1)
+    if end_day != st.session_state.end_day:
+        st.session_state.end_day = end_day
+    end_month = w_col_3.number_input(
+        label='End month', min_value=1, max_value=12, value=12, step=1)
+    if end_month != st.session_state.end_month:
+        st.session_state.end_month = end_month
+
+    # filter
+    apply_analysis_period()
