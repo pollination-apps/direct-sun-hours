@@ -13,6 +13,7 @@ from honeybee_vtk.model import Model as VTKModel
 from pollination_streamlit_viewer import viewer
 from ladybug.wea import Wea
 from ladybug.analysisperiod import AnalysisPeriod
+from simulation import run_local_study
 
 def initialize():
     """ Initialize any of the session state variables if they don't already exist. """
@@ -202,6 +203,13 @@ def update_wea(
         st.session_state.wea_path = wea_path
 
 
+def is_api_client_valid():
+    return st.session_state.sim_client and \
+    st.session_state.query and \
+    st.session_state.api_key and \
+    st.session_state.owner and \
+    st.session_state.project
+
 def get_weather_file(column):
     """Get the EPW weather file from the App input."""
     # upload weather file
@@ -274,7 +282,22 @@ def get_inputs(host: str, container):
                 label='End month', min_value=1, max_value=12, value=12, step=1)
             if end_month != st.session_state.end_month:
                 st.session_state.end_month = end_month
-        submit = st.form_submit_button(label='Update')
+            is_cloud = st.checkbox(label='On Cloud', value=False)
+        submit = st.form_submit_button(label='Run Study')
         if submit:
             update_wea(start_hour, start_day, start_month, end_hour,
                 end_day, end_month)
+            if is_cloud:
+                if not is_api_client_valid():
+                    st.warning('Please, check API data on the sidebar.')
+                    return
+                else:
+                    pass
+            else:
+                status, error = run_local_study(st.session_state.target_folder,
+                    st.session_state.hb_model,
+                    st.session_state.wea_path)
+                if status:
+                    st.success('Done!')
+                else:
+                    st.warning(error)
