@@ -294,12 +294,16 @@ def get_inputs(host: str, container):
                     st.warning('Please, check API data on the sidebar.')
                     return
                 else:
-                    # job_id = run_cloud_study(
-                    #     query=st.session_state.query,
-                    #     api_client=st.session_state.sim_client,
-                    #     model_path=st.session_state.hbjson_path,
-                    #     wea_path=st.session_state.wea_path)
-                    pass
+                    status, error = run_cloud_study(
+                        query=st.session_state.query,
+                        api_client=st.session_state.sim_client,
+                        model_path=Path(st.session_state.hbjson_path),
+                        wea_path=st.session_state.wea_path)
+                    if status:
+                        st.success('Done!')
+                    else:
+                        st.warning(error)
+                    
             else:
                 status, error = run_local_study(
                     st.session_state.target_folder,
