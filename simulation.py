@@ -46,6 +46,7 @@ def run_local_study(
             radiance_check=True)
         st.session_state.results_path = f'{project_folder}/direct_sun_hours/results/cumulative'
         return True, None
+        
     except Exception as e:
         st.session_state.results_path = None
         return False, e
@@ -55,28 +56,32 @@ def run_cloud_study(query: Query,
         api_client: ApiClient,
         model_path: pathlib.Path,
         wea_path: pathlib.Path):
-    query.job_id = None
-    # remember to add direct-sun-hours to your cloud project
-    recipe = ItRecipe('ladybug-tools', 'direct-sun-hours',
-                    '0.5.5-viz', api_client)
+    try:
+        query.job_id = None
+        # remember to add direct-sun-hours to your cloud project
+        recipe = ItRecipe('ladybug-tools', 'direct-sun-hours',
+                        '0.5.5-viz', api_client)
 
-    new_job = NewJob(query.owner,
-                     query.project,
-                     recipe,
-                     client=api_client)
+        new_job = NewJob(query.owner,
+                        query.project,
+                        recipe,
+                        client=api_client)
 
-    model_project_path = new_job.upload_artifact(model_path)
+        model_project_path = new_job.upload_artifact(model_path)
 
-    wea_project_path = new_job.upload_artifact(wea_path)
+        wea_project_path = new_job.upload_artifact(wea_path)
 
-    q = {
-        'model': model_project_path,
-        'wea': wea_project_path
-    }
+        q = {
+            'model': model_project_path,
+            'wea': wea_project_path
+        }
 
-    new_job.arguments = [q]
-    job = new_job.create() # run
+        new_job.arguments = [q]
+        job = new_job.create() # run
+        query.job_id = job.id
 
-    query.job_id = job.id
+        return job.id, None
 
-    return job.id
+    except Exception as e:
+        st.session_state.results_path = None
+        return None, e
