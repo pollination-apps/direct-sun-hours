@@ -11,6 +11,7 @@ from pollination_streamlit_io import get_hbjson
 from honeybee.model import Model
 from honeybee_vtk.model import Model as VTKModel
 from pollination_streamlit_viewer import viewer
+from ladybug.wea import Wea
 
 def initialize():
     """ Initialize any of the session state variables if they don't already exist. """
@@ -36,6 +37,8 @@ def initialize():
     if 'hb_model' not in st.session_state:
         st.session_state.hb_model = None
     # results session
+    if 'vtk_result_path' not in st.session_state:
+        st.session_state.vtk_result_path = None
     if 'result_json' not in st.session_state:
         st.session_state.result_json = None
 
@@ -67,7 +70,9 @@ def new_model():
     # reset the simulation results and get the file data
     st.session_state.vtk_path = None
     st.session_state.valid_report = None
+
     st.session_state.result_json = None
+    st.session_state.vtk_result_path = None
     # load the model object from the file data
     if 'hbjson' in st.session_state['hbjson_data']:
         hbjson_data = st.session_state['hbjson_data']['hbjson']
@@ -115,6 +120,43 @@ def generate_model_validation(hb_model: Model, container):
         container.code(report, language='console')
 
 
+def new_weather_file():
+    """Process a newly-uploaded EPW file."""
+    # reset the simulation results and get the file data
+    st.session_state.result_json = None
+    st.session_state.vtk_result_path = None
+
+    # from key name
+    epw_file = st.session_state.epw_data
+    if epw_file:
+        # save EPW in data folder
+        epw_path = Path(
+            f'./{st.session_state.target_folder}/data/'
+            f'{st.session_state.user_id}/{epw_file.name}'
+        )
+        epw_path.parent.mkdir(parents=True, exist_ok=True)
+        epw_path.write_bytes(epw_file.read())
+        # create a WEA file from the EPW
+        wea_file = epw_path.as_posix().replace('.epw', '.wea')
+        wea = Wea.from_epw_file(epw_file=epw_path)
+        wea.write(wea_file)
+        wea_path = Path(wea_file)
+        # set the session state variables
+        st.session_state.wea_path = wea_path
+    else:
+        st.session_state.wea_path = None
+
+
+def get_weather_file(column):
+    """Get the EPW weather file from the App input."""
+    # upload weather file
+    column.file_uploader(
+        'Weather file (EPW)', type=['epw'],
+        on_change=new_weather_file, key='epw_data',
+        help='Select an EPW weather file to be used in the simulation.'
+    )
+
+
 def get_api_inputs(host: str, container):
     """ API Client user inputs """
     with container:
@@ -133,7 +175,7 @@ def get_api_inputs(host: str, container):
             project=project_name)
 
 
-def get_model_inputs(host: str, container):
+def get_inputs(host: str, container):
     """Get Model user inputs."""
     # get the input model
     m_col_1, m_col_2 = container.columns([2, 1])
@@ -145,4 +187,7 @@ def get_model_inputs(host: str, container):
         if m_col_2.checkbox(label='Validate Model', value=False):
             generate_model_validation(st.session_state.hb_model, container)
 
+    # get the input EPW and WEA files
+    w_col_1, w_col_2 = container.columns([2, 1])
+    get_weather_file(w_col_1)
 
