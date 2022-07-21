@@ -56,8 +56,12 @@ def initialize():
     # results session
     if 'vtk_result_path' not in st.session_state:
         st.session_state.vtk_result_path = None
+    if 'result_path' not in st.session_state:
+        st.session_state.result_path = None
     if 'result_json' not in st.session_state:
         st.session_state.result_json = None
+    if 'hb_model_dict' not in st.session_state:
+        st.session_state.hb_model_dict = None
     if 'job_id' not in st.session_state:
         st.session_state.job_id = None
 

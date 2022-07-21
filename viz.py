@@ -28,7 +28,7 @@ def get_vtk_config(folder: pathlib.Path,
         ]
     }
 
-    config_file = folder.joinpath('config.json')
+    config_file = folder.parent.joinpath('config.json')
     config_file.write_text(json.dumps(cfg))
 
     return config_file.as_posix()

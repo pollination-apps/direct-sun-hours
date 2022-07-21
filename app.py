@@ -1,6 +1,6 @@
 import streamlit as st
 from inputs import initialize, get_api_inputs, get_inputs
-from simulation import cloud_result_output
+from simulation import cloud_outputs
 from pollination_streamlit_io import get_host 
 from helper import local_css
 
@@ -38,8 +38,8 @@ def main(platform):
         in_container = st.container()
         get_inputs(platform, in_container)
     with tab2:
-        cloud_result_output(platform)
-
+        o_container = st.container()
+        cloud_outputs(platform, o_container)
 
 if __name__ == '__main__':
     platform = get_host() or 'web'
