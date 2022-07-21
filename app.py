@@ -1,6 +1,7 @@
 import streamlit as st
 from inputs import initialize, get_api_inputs, get_inputs
 from pollination_streamlit_io import get_host 
+from helper import local_css
 
 st.set_page_config(
     page_title='Direct Sun Hours',
@@ -15,6 +16,9 @@ st.sidebar.image(
 
 def main(platform):
     """Perform sunlight hours simulations."""
+    # load local css
+    local_css('style.css')
+
     # title
     st.header('Sunlight hours')
     st.markdown("""---""")  # horizontal divider line between title and input
