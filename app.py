@@ -21,18 +21,23 @@ def main(platform):
 
     # title
     st.header('Sunlight hours')
-    st.markdown("""---""")  # horizontal divider line between title and input
 
     # initialize the app and load up all of the inputs
     initialize()
 
-    # sidebar
-    sidebar_container = st.container()
-    get_api_inputs(platform, sidebar_container)
+    # set tabs
+    tab1, tab2 = st.tabs(["Run Study", "Read Result"])
 
-    # body
-    in_container = st.container()
-    get_inputs(platform, in_container)
+    # sidebar
+    with tab1:
+        sidebar_container = st.container()
+        get_api_inputs(platform, sidebar_container)
+
+        # body
+        in_container = st.container()
+        get_inputs(platform, in_container)
+    with tab2:
+        st.header('Hello')
 
 
 if __name__ == '__main__':
