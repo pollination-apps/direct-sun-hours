@@ -1,4 +1,3 @@
-
 """ A module for inputs. """
 
 from pathlib import Path
@@ -59,6 +58,8 @@ def initialize():
         st.session_state.vtk_result_path = None
     if 'result_json' not in st.session_state:
         st.session_state.result_json = None
+    if 'job_id' not in st.session_state:
+        st.session_state.job_id = None
 
 
 def set_api_client(host: str,
@@ -284,7 +285,8 @@ def get_inputs(host: str, container):
                 label='End month', min_value=1, max_value=12, value=12, step=1)
             if end_month != st.session_state.end_month:
                 st.session_state.end_month = end_month
-            is_cloud = st.checkbox(label='On Cloud', value=False)
+            is_cloud = st.checkbox(label='On Cloud', value=False, 
+                key='is_cloud')
         submit = st.form_submit_button(label='Run Study')
         if submit:
             update_wea(start_hour, start_day, start_month, end_hour,
@@ -293,16 +295,16 @@ def get_inputs(host: str, container):
                 if not is_api_client_valid():
                     st.warning('Please, check API data on the sidebar.')
                     return
+                
+                status, error = run_cloud_study(
+                    query=st.session_state.query,
+                    api_client=st.session_state.sim_client,
+                    model_path=Path(st.session_state.hbjson_path),
+                    wea_path=st.session_state.wea_path)
+                if status:
+                    st.success('Done!')
                 else:
-                    status, error = run_cloud_study(
-                        query=st.session_state.query,
-                        api_client=st.session_state.sim_client,
-                        model_path=Path(st.session_state.hbjson_path),
-                        wea_path=st.session_state.wea_path)
-                    if status:
-                        st.success('Done!')
-                    else:
-                        st.warning(error)
+                    st.warning(error)
                     
             else:
                 status, error = run_local_study(
