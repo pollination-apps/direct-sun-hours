@@ -1,5 +1,5 @@
 import streamlit as st
-from inputs import initialize, get_api_inputs
+from inputs import initialize, get_api_inputs, get_model_inputs
 from pollination_streamlit_io import get_host 
 
 st.set_page_config(
@@ -21,8 +21,14 @@ def main(platform):
 
     # initialize the app and load up all of the inputs
     initialize()
-    sidebar_container = st.container()  # container to hold the inputs
+
+    # sidebar
+    sidebar_container = st.container()
     get_api_inputs(platform, sidebar_container)
+
+    # body
+    in_container = st.container()
+    get_model_inputs(platform, in_container)
 
 
 if __name__ == '__main__':
