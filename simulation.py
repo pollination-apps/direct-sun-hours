@@ -8,6 +8,7 @@ from typing import Optional
 from lbt_recipes.recipe import Recipe
 from honeybee.model import Model
 from ladybug.wea import Wea
+from helper import create_analytical_mesh
 from outputs import get_vtk_model_result
 from query import Query
 from honeybee_radiance.config import folders as rad_folders
@@ -15,6 +16,7 @@ from pollination_streamlit.api.client import ApiClient
 from pollination_streamlit.interactors import Recipe as ItRecipe
 from pollination_streamlit.interactors import NewJob, Job
 import zipfile
+from pollination_streamlit_io import send_geometry, send_hbjson
 
 def run_local_study(
         here: str,
@@ -116,7 +118,18 @@ def cloud_outputs(host: str, container):
             st.session_state.result_path = res_folder
 
     if st.session_state.result_path:
-        get_vtk_model_result(st.session_state.hb_model_dict, 
-            st.session_state.result_path, container)
+        if host == 'web':
+            get_vtk_model_result(st.session_state.hb_model_dict, 
+                st.session_state.result_path, container)
+        else:
+            # generate grids
+            analysis_grid = create_analytical_mesh(st.session_state.result_path, 
+                st.session_state.hb_model_dict)
+            with container:
+                send_geometry(geometry=analysis_grid,
+                    key='po-grids')
+                send_hbjson(
+                    hbjson=st.session_state.hb_model_dict,
+                    key='po-model')
 
         
