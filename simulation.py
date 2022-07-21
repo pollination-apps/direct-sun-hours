@@ -95,12 +95,13 @@ def run_cloud_study(query: Query,
         return None, e
 
 
-def cloud_outputs(host: str, container):
+def get_output(host: str, container):
     api_client = ApiClient(api_token=st.session_state.api_key)
     with container:
         if st.session_state.is_cloud:
             job = job_selector(api_client) # is a st.text_input
             if job and job.id != st.session_state.job_id:
+                st.session_state.vtk_result_path = None
                 st.session_state.job_id = job.id
 
                 run = job.runs[0]
@@ -139,5 +140,10 @@ def viz_result(host:str, model:dict, container):
                 send_hbjson(
                     hbjson=model,
                     key='po-model')
+    
+    # TODO: Add revit
+    # send_results(
+    # geometry=st.session_state.result_json,
+    # key='bake-grids')
 
         
