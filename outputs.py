@@ -27,7 +27,7 @@ def get_vtk_config(res_folder: pathlib.Path) -> str:
                 "legend_parameters": {
                     "hide_legend": False,
                     "min": 0,
-                    "max": 5,
+                    "max": 5000,
                     "color_set": "nuanced",
                     "label_parameters": {
                         "color": [34, 247, 10],
