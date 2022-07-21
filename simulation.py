@@ -7,11 +7,12 @@ from typing import Optional
 from lbt_recipes.recipe import Recipe
 from honeybee.model import Model
 from ladybug.wea import Wea
+from outputs import get_vtk_model_result
 from query import Query
 from honeybee_radiance.config import folders as rad_folders
 from pollination_streamlit.api.client import ApiClient
 from pollination_streamlit.interactors import Recipe as ItRecipe
-from pollination_streamlit.interactors import NewJob
+from pollination_streamlit.interactors import NewJob, Job
 from pollination_streamlit.selectors import job_selector
 import zipfile
 
@@ -90,7 +91,7 @@ def run_cloud_study(query: Query,
         return None, e
 
 
-def cloud_result_output(host: str):
+def cloud_outputs(host: str, container):
     api_client = ApiClient(api_token=st.session_state.api_key)
     job = job_selector(api_client) # is a st.text_input
 
@@ -111,5 +112,11 @@ def cloud_result_output(host: str):
             zip_folder.extractall(res_folder.as_posix())
 
         model_dict = json.load(job.download_artifact(input_model_path))
+        st.session_state.hb_model_dict = model_dict
+        st.session_state.result_path = res_folder
 
-        st.session_state.results_path = res_folder
+    if st.session_state.result_path:
+        get_vtk_model_result(st.session_state.hb_model_dict, 
+            st.session_state.result_path, container)
+
+        

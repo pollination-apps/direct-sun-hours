@@ -11,10 +11,9 @@ from honeybee_vtk.model import (HBModel,
                                 SensorGridOptions,
                                 DisplayMode)
 from pollination_streamlit_viewer import viewer
-from pollination_streamlit.interactors import Job
 
-def get_vtk_config(folder: pathlib.Path,
-    values_path: pathlib.Path) -> str:
+
+def get_vtk_config(res_folder: pathlib.Path) -> str:
     '''Write Direct Sun Hours config to a folder.'''
 
     cfg = {
@@ -23,7 +22,7 @@ def get_vtk_config(folder: pathlib.Path,
                 "identifier": "Direct Sun Hours",
                 "object_type": "grid",
                 "unit": "Hour",
-                "path": values_path.as_posix(),
+                "path": res_folder.as_posix(),
                 "hide": False,
                 "legend_parameters": {
                     "hide_legend": False,
@@ -40,7 +39,7 @@ def get_vtk_config(folder: pathlib.Path,
         ]
     }
 
-    config_file = folder.joinpath('config.json')
+    config_file = res_folder.parent.joinpath('config.json')
     config_file.write_text(json.dumps(cfg))
 
     return config_file.as_posix()
@@ -48,31 +47,28 @@ def get_vtk_config(folder: pathlib.Path,
 
 def get_vtk_model_result(model_dict: dict, 
     simulation_folder: pathlib.Path,
-    values_path: pathlib.Path,
     container):
-    # load the configuration file
-    cfg_file = get_vtk_config(
-        folder=simulation_folder.resolve(),
-        values_path=values_path)
 
     # load model and results and save them as a vtkjs file
-    hb_model = HBModel.from_dict(model_dict)
     if not st.session_state.vtk_result_path:
-        vtk_model = VTKModel.from_hbjson(hb_model, SensorGridOptions.Mesh)
-        vtk_result_path = vtk_model.to_vtkjs(folder=st.session_state.target_folder,
+        # load the configuration file
+        cfg_file = get_vtk_config(
+            res_folder=simulation_folder.resolve())
+        hb_model = HBModel.from_dict(model_dict)
+        hbjson_path = hb_model.to_hbjson(
+            hb_model.identifier,
+            simulation_folder)
+    
+        vtk_model = VTKModel.from_hbjson(hbjson_path, SensorGridOptions.Mesh)
+        vtk_result_path = vtk_model.to_vtkjs(folder=simulation_folder.resolve(),
             config=cfg_file,
             model_display_mode=DisplayMode.Wireframe,
-            name=hb_model.identifier + 'res')
+            name=hb_model.identifier)
         st.session_state.vtk_result_path = vtk_result_path
     vtk_result_path = st.session_state.vtk_result_path
 
     with container:
         viewer(content=pathlib.Path(vtk_result_path).read_bytes(), 
-        key='vtk_res_model')
+            key='vtk_res_model')
 
 
-    # viz_file = get_vtk_model_result(model_dict,
-    #     simulation_folder,
-    #     simulation_folder.joinpath('results'))
-
-    # return viz_file, res_folder.as_posix(), model_dict, simulation_folder
