@@ -5,11 +5,12 @@ from typing import Dict
 import pathlib
 import json
 
-def read_daylight_factor_results_from_folder(results_folder: str, 
-    output_folder: str, model: Dict):
+def read_results_from_folder(results_folder: str, 
+    config_file: str, model: Dict):
     info_file = pathlib.Path(results_folder, 'grids_info.json')
     grid_list = json.loads(info_file.read_text())
-    config_file = pathlib.Path(output_folder, 'config.json')
+
+    config_file = pathlib.Path(config_file)
     config = json.loads(config_file.read_text())
     sensor_grids = model['properties']['radiance']['sensor_grids']
     

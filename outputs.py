@@ -45,13 +45,12 @@ def get_vtk_config(res_folder: pathlib.Path) -> str:
 
 def get_vtk_model_result(model_dict: dict, 
     simulation_folder: pathlib.Path,
+    cfg_file,
     container):
 
     # load model and results and save them as a vtkjs file
     if not st.session_state.vtk_result_path:
         # load the configuration file
-        cfg_file = get_vtk_config(
-            res_folder=simulation_folder.resolve())
         hb_model = HBModel.from_dict(model_dict)
         hbjson_path = hb_model.to_hbjson(
             hb_model.identifier,
