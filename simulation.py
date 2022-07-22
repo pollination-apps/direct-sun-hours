@@ -67,7 +67,7 @@ def run_cloud_study(query: Query,
         query.job_id = None
         # remember to add direct-sun-hours to your cloud project
         recipe = ItRecipe('ladybug-tools', 'direct-sun-hours',
-            '0.5.5-viz', api_client)
+            'latest', api_client)
 
         new_job = NewJob(query.owner,
             query.project,
