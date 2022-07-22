@@ -259,8 +259,9 @@ def get_inputs(host: str, container):
     m_col_2.checkbox(label='On Cloud', value=False, key='is_cloud', 
         on_change=reset_res)
     if st.session_state.hb_model:
-        if m_col_2.checkbox(label='Preview Model', value=False):
-            generate_vtk_model(st.session_state.hb_model, container)
+        container.success('Model Linked!')
+        # if m_col_2.checkbox(label='Preview Model', value=False):
+        #     generate_vtk_model(st.session_state.hb_model, container)
         if m_col_2.checkbox(label='Validate Model', value=False):
             generate_model_validation(st.session_state.hb_model, container)
 
