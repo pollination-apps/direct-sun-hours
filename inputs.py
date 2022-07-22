@@ -60,8 +60,6 @@ def initialize():
         st.session_state.vtk_result_path = None
     if 'result_path' not in st.session_state:
         st.session_state.result_path = None
-    if 'result_json' not in st.session_state:
-        st.session_state.result_json = None
     if 'hb_model_dict' not in st.session_state:
         st.session_state.hb_model_dict = None
     if 'job_id' not in st.session_state:
@@ -96,9 +94,11 @@ def new_model():
     st.session_state.vtk_path = None
     st.session_state.hbjson_path = None
     st.session_state.valid_report = None
-    
-    st.session_state.result_path = None
     st.session_state.vtk_result_path = None
+    st.session_state.result_path = None
+    st.session_state.hb_model_dict = None
+    st.session_state.job_id = None
+    
     # load the model object from the file data
     if 'hbjson' in st.session_state['hbjson_data']:
         hbjson_data = st.session_state['hbjson_data']['hbjson']
@@ -152,8 +152,10 @@ def generate_model_validation(hb_model: Model, container):
 def new_weather_file():
     """Process a newly-uploaded EPW file."""
     # reset the simulation results and get the file data
-    st.session_state.result_path = None
     st.session_state.vtk_result_path = None
+    st.session_state.result_path = None
+    st.session_state.hb_model_dict = None
+    st.session_state.job_id = None
 
     # from key name
     epw_file = st.session_state.epw_data
@@ -296,6 +298,10 @@ def get_inputs(host: str, container):
         submit = st.form_submit_button(label='Run Study')
         if submit:
             st.session_state.vtk_result_path = None
+            st.session_state.result_path = None
+            st.session_state.hb_model_dict = None
+            st.session_state.job_id = None
+
             update_wea(start_hour, start_day, start_month, end_hour,
                 end_day, end_month)
             if st.session_state.is_cloud:
