@@ -94,10 +94,7 @@ def new_model():
     st.session_state.vtk_path = None
     st.session_state.hbjson_path = None
     st.session_state.valid_report = None
-    st.session_state.vtk_result_path = None
-    st.session_state.result_path = None
-    st.session_state.hb_model_dict = None
-    st.session_state.job_id = None
+    reset_res()
     
     # load the model object from the file data
     if 'hbjson' in st.session_state['hbjson_data']:
@@ -152,10 +149,7 @@ def generate_model_validation(hb_model: Model, container):
 def new_weather_file():
     """Process a newly-uploaded EPW file."""
     # reset the simulation results and get the file data
-    st.session_state.vtk_result_path = None
-    st.session_state.result_path = None
-    st.session_state.hb_model_dict = None
-    st.session_state.job_id = None
+    reset_res()
 
     # from key name
     epw_file = st.session_state.epw_data
@@ -249,13 +243,21 @@ def get_api_inputs(host: str, container):
             project=project_name)
 
 
+def reset_res():
+    st.session_state.vtk_result_path = None
+    st.session_state.result_path = None
+    st.session_state.hb_model_dict = None
+    st.session_state.job_id = None
+
+
 def get_inputs(host: str, container):
     """Get Model user inputs."""
     # get the input model
     m_col_1, m_col_2 = container.columns([2, 1])
     get_model(m_col_1)
     # add options to preview the model in 3D and validate it
-    m_col_2.checkbox(label='On Cloud', value=False, key='is_cloud')
+    m_col_2.checkbox(label='On Cloud', value=False, key='is_cloud', 
+        on_change=reset_res)
     if st.session_state.hb_model:
         if m_col_2.checkbox(label='Preview Model', value=False):
             generate_vtk_model(st.session_state.hb_model, container)
