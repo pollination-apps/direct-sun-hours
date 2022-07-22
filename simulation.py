@@ -8,15 +8,15 @@ from typing import Optional
 from lbt_recipes.recipe import Recipe
 from honeybee.model import Model
 from ladybug.wea import Wea
-from helper import create_analytical_mesh
-from outputs import get_vtk_model_result
+from helper import create_analytical_mesh, read_results_from_folder
+from outputs import get_vtk_config, get_vtk_model_result
 from query import Query
 from honeybee_radiance.config import folders as rad_folders
 from pollination_streamlit.api.client import ApiClient
 from pollination_streamlit.interactors import Recipe as ItRecipe
 from pollination_streamlit.interactors import NewJob, Job
 import zipfile
-from pollination_streamlit_io import send_geometry, send_hbjson
+from pollination_streamlit_io import send_geometry, send_hbjson, send_results
 
 def run_local_study(
         here: str,
@@ -127,10 +127,14 @@ def get_output(host: str, container):
 
 def viz_result(host:str, model:dict, container):
     if st.session_state.result_path:
+        cfg_file = get_vtk_config(
+            res_folder=st.session_state.result_path.resolve())
         if host == 'web':
             get_vtk_model_result(model, 
-                st.session_state.result_path, container)
-        else:
+                st.session_state.result_path, 
+                cfg_file, 
+                container)
+        elif host == 'sketchup' or host == 'rhino':
             # generate grids
             analysis_grid = create_analytical_mesh(st.session_state.result_path, 
                 model)
@@ -140,10 +144,12 @@ def viz_result(host:str, model:dict, container):
                 send_hbjson(
                     hbjson=model,
                     key='po-model')
-    
-    # TODO: Add revit
-    # send_results(
-    # geometry=st.session_state.result_json,
-    # key='bake-grids')
+        elif host == 'revit':
+            # generate body message
+            message = read_results_from_folder(st.session_state.result_path, 
+                cfg_file, model)
+            send_results(
+                geometry=message,
+                key='bake-grids')
 
         
