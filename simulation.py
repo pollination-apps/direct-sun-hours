@@ -1,22 +1,17 @@
 """ A module to run local calculation. """
 
-from pollination_streamlit.selectors import job_selector
-import json
 import pathlib
 import streamlit as st
-from typing import Optional
+from typing import Optional, Tuple
 from lbt_recipes.recipe import Recipe
 from honeybee.model import Model
 from ladybug.wea import Wea
-from helper import create_analytical_mesh, read_results_from_folder
-from outputs import get_vtk_config, get_vtk_model_result
 from query import Query
 from honeybee_radiance.config import folders as rad_folders
 from pollination_streamlit.api.client import ApiClient
 from pollination_streamlit.interactors import Recipe as ItRecipe
 from pollination_streamlit.interactors import NewJob, Job
-import zipfile
-from pollination_streamlit_io import send_geometry, send_hbjson, send_results
+
 
 def run_local_study(
         here: str,
@@ -26,8 +21,8 @@ def run_local_study(
         north: Optional[int]=0, 
         cpu_count: Optional[int]=4, 
         min_sensor_count: Optional[int]=100, 
-        grid_filter: Optional[str]='*'):
-
+        grid_filter: Optional[str]='*') -> Tuple[bool, Exception]:
+    """ Run local study """
     try:
         # reload wea
         wea = Wea.from_file(wea_path)
@@ -62,7 +57,8 @@ def run_local_study(
 def run_cloud_study(query: Query,
         api_client: ApiClient,
         model_path: pathlib.Path,
-        wea_path: pathlib.Path):
+        wea_path: pathlib.Path) -> Tuple[str, Exception]:
+    """ Run cloud study """
     try:
         query.job_id = None
         # remember to add direct-sun-hours to your cloud project
@@ -93,63 +89,4 @@ def run_cloud_study(query: Query,
     except Exception as e:
         st.session_state.results_path = None
         return None, e
-
-
-def get_output(host: str, container):
-    api_client = ApiClient(api_token=st.session_state.api_key)
-    with container:
-        if st.session_state.is_cloud:
-            job = job_selector(api_client) # is a st.text_input
-            if job and job.id != st.session_state.job_id:
-                st.session_state.vtk_result_path = None
-                st.session_state.job_id = job.id
-
-                run = job.runs[0]
-                input_model_path = job.runs_dataframe.dataframe['model'][0]
-
-                simulation_folder = pathlib.Path(st.session_state.target_folder, 
-                    run.id)
-                res_folder = simulation_folder.joinpath('cloud_results')
-                res_folder.mkdir(parents=True, exist_ok=True)
-
-                # download results
-                res_zip = run.download_zipped_output('cumulative-sun-hours')
-                with zipfile.ZipFile(res_zip) as zip_folder:
-                    zip_folder.extractall(res_folder.as_posix())
-
-                model_dict = json.load(job.download_artifact(input_model_path))
-                st.session_state.hb_model_dict = model_dict
-                st.session_state.result_path = res_folder
-         
-        viz_result(host, 
-            st.session_state.hb_model_dict, 
-            container)
-
-def viz_result(host:str, model:dict, container):
-    if st.session_state.result_path:
-        cfg_file = get_vtk_config(
-            res_folder=st.session_state.result_path.resolve())
-        if host == 'web':
-            get_vtk_model_result(model, 
-                st.session_state.result_path, 
-                cfg_file, 
-                container)
-        elif host == 'sketchup' or host == 'rhino':
-            # generate grids
-            analysis_grid = create_analytical_mesh(st.session_state.result_path, 
-                model)
-            with container:
-                send_geometry(geometry=analysis_grid,
-                    key='po-grids')
-                send_hbjson(
-                    hbjson=model,
-                    key='po-model')
-        elif host == 'revit':
-            # generate body message
-            message = read_results_from_folder(st.session_state.result_path, 
-                cfg_file, model)
-            send_results(
-                geometry=message,
-                key='bake-grids')
-
-        
+  

@@ -186,6 +186,7 @@ def update_wea(
     end_hour: int = None,
     end_day: int = None,
     end_month: int= None):
+    """ Update analysis period """
     period = AnalysisPeriod(
         st_month=start_month or st.session_state.start_month,
         st_day=start_day or st.session_state.start_day, 
@@ -209,11 +210,13 @@ def update_wea(
 
 
 def is_api_client_valid():
+    """ Check if API input are there """
     return st.session_state.sim_client and \
     st.session_state.query and \
     st.session_state.api_key and \
     st.session_state.owner and \
     st.session_state.project
+
 
 def get_weather_file(column):
     """Get the EPW weather file from the App input."""
@@ -244,6 +247,7 @@ def get_api_inputs(host: str, container):
 
 
 def reset_res():
+    """ Reset output session variables """
     st.session_state.vtk_result_path = None
     st.session_state.result_path = None
     st.session_state.hb_model_dict = None
