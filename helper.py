@@ -7,6 +7,7 @@ import json
 
 def read_results_from_folder(results_folder: str, 
     config_file: str, model: Dict):
+    """ Get grid information - revit """
     info_file = pathlib.Path(results_folder, 'grids_info.json')
     grid_list = json.loads(info_file.read_text())
 
@@ -26,11 +27,12 @@ def read_results_from_folder(results_folder: str,
         "configs": config['data']
     }
 
+
 def create_analytical_mesh(
         results_folder: str, 
         model: Dict
     ):
-    # get grid info
+    """ Generate analysis grid - sketchup and rhino """
     info_file = pathlib.Path(results_folder, 'grids_info.json')
     info = json.loads(info_file.read_text())
     grids = model['properties']['radiance']['sensor_grids']
@@ -52,6 +54,7 @@ def create_analytical_mesh(
         "values": merged_values
     }
     return analytical_mesh
+
 
 def local_css(file_name):
     """Load local css file."""

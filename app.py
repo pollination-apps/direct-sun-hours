@@ -1,6 +1,6 @@
 import streamlit as st
 from inputs import initialize, get_api_inputs, get_inputs
-from simulation import get_output
+from outputs import get_output
 from pollination_streamlit_io import get_host 
 from helper import local_css
 
