@@ -12,10 +12,12 @@ from honeybee_vtk.model import (HBModel,
                                 SensorGridOptions,
                                 DisplayMode)
 from pollination_streamlit_viewer import viewer
-from pollination_streamlit.selectors import job_selector
+from pollination_streamlit.interactors import Job
 from helper import create_analytical_mesh, read_results_from_folder
-from pollination_streamlit.api.client import ApiClient
-from pollination_streamlit_io import send_geometry, send_hbjson, send_results
+from pollination_streamlit_io import (send_geometry, send_hbjson, 
+    send_results, select_study, select_project)
+from inputs import is_api_client_valid
+
 
 def get_vtk_config(res_folder: pathlib.Path) -> str:
     """Write Direct Sun Hours config to a folder."""
@@ -73,30 +75,56 @@ def get_vtk_model_result(model_dict: dict,
 
 
 def get_output(host: str, container):
-    api_client = ApiClient(api_token=st.session_state.api_key)
+    # TODO: clean this method
     with container:
         if st.session_state.is_cloud:
-            job = job_selector(api_client) # is a st.text_input
-            if job and job.id != st.session_state.job_id:
-                st.session_state.vtk_result_path = None
-                st.session_state.job_id = job.id
+            if is_api_client_valid():
+                api_client = st.session_state.api_client
+                user = st.session_state.user
 
-                run = job.runs[0]
-                input_model_path = job.runs_dataframe.dataframe['model'][0]
+                pcol1, pcol2 = st.columns(2)
+                if user and 'username' in user:
+                    with pcol1:
+                        project = select_project(
+                            'out-select-project',
+                            api_client,
+                            project_owner=user['username']
+                        )               
+                    if project and 'name' in project:
+                        with pcol2:
+                            study = select_study(
+                                'out-select-study',
+                                api_client,
+                                project_name=project['name'],
+                                project_owner=user['username']
+                            )
+                        if study:
+                            job = Job(owner=user['username'], project=project['name'], id=study['id'],
+                                client=api_client)
+                            # job = job_selector(api_client) # is a st.text_input
+                            if job and job.id != st.session_state.job_id:
+                                st.session_state.vtk_result_path = None
+                                st.session_state.job_id = job.id
 
-                simulation_folder = pathlib.Path(st.session_state.target_folder, 
-                    run.id)
-                res_folder = simulation_folder.joinpath('cloud_results')
-                res_folder.mkdir(parents=True, exist_ok=True)
+                                run = job.runs[0]
+                                input_model_path = job.runs_dataframe.dataframe['model'][0]
 
-                # download results
-                res_zip = run.download_zipped_output('cumulative-sun-hours')
-                with zipfile.ZipFile(res_zip) as zip_folder:
-                    zip_folder.extractall(res_folder.as_posix())
+                                simulation_folder = pathlib.Path(st.session_state.target_folder, 
+                                    run.id)
+                                res_folder = simulation_folder.joinpath('cloud_results')
+                                res_folder.mkdir(parents=True, exist_ok=True)
 
-                model_dict = json.load(job.download_artifact(input_model_path))
-                st.session_state.hb_model_dict = model_dict
-                st.session_state.result_path = res_folder
+                                # download results
+                                res_zip = run.download_zipped_output('cumulative-sun-hours')
+                                with zipfile.ZipFile(res_zip) as zip_folder:
+                                    zip_folder.extractall(res_folder.as_posix())
+
+                                model_dict = json.load(job.download_artifact(input_model_path))
+                                st.session_state.hb_model_dict = model_dict
+                                st.session_state.result_path = res_folder
+            else:
+                st.warning('Please, check API data on the sidebar.')
+                return
          
         viz_result(host, 
             st.session_state.hb_model_dict, 
@@ -117,11 +145,14 @@ def viz_result(host:str, model:dict, container):
             analysis_grid = create_analytical_mesh(st.session_state.result_path, 
                 model)
             with container:
-                send_geometry(geometry=analysis_grid,
-                    key='po-grids')
-                send_hbjson(
-                    hbjson=model,
-                    key='po-model')
+                col1, col2 = st.columns(2)
+                with col1:
+                    send_geometry(geometry=analysis_grid,
+                        key='po-grids')
+                with col2:
+                    send_hbjson(
+                        hbjson=model,
+                        key='po-model')
         elif host == 'revit':
             # generate body message
             message = read_results_from_folder(st.session_state.result_path, 

@@ -5,8 +5,9 @@ import os
 import uuid
 import streamlit as st
 from query import Query
+from pollination_streamlit.selectors import get_api_client
 from pollination_streamlit.api.client import ApiClient
-from pollination_streamlit_io import get_hbjson
+from pollination_streamlit_io import get_hbjson, auth_user, select_project
 from honeybee.model import Model
 from honeybee_vtk.model import Model as VTKModel
 from pollination_streamlit_viewer import viewer
@@ -26,12 +27,12 @@ def initialize():
     if 'is_cloud' not in st.session_state:
         st.session_state.is_cloud = False
     # sim session
+    if 'user' not in st.session_state:
+        st.session_state.user = None
     if 'query' not in st.session_state:
         st.session_state.query = None
-    if 'sim_client' not in st.session_state:
-        st.session_state.sim_client = None
-    if 'api_key' not in st.session_state:
-        st.session_state.api_key = None
+    if 'api_client' not in st.session_state:
+        st.session_state.api_client = None
     if 'epw_path' not in st.session_state:
         st.session_state.epw_path = None
     if 'wea_path' not in st.session_state:
@@ -67,23 +68,19 @@ def initialize():
 
 
 def set_api_client(host: str,
-    api_key: str,
+    api_client: ApiClient,
     owner: str,
-    project: str) -> ApiClient:
+    project: str):
     """ Set API client for simulations """
-    # TODO: replace components with auth pollination-streamlit-io
-
     # create a query
     query = Query(host)
     query.owner = owner
     query.project = project
 
-    api_client = ApiClient(api_token=api_key)
-
     # add to session state
-    st.session_state.sim_client = api_client
+    st.session_state.api_client = api_client
     st.session_state.query = query
-    st.session_state.api_key = api_key
+    st.session_state.api_client = api_client
     st.session_state.owner = query.owner
     st.session_state.project = query.project
 
@@ -211,10 +208,13 @@ def update_wea(
 
 def is_api_client_valid():
     """ Check if API input are there """
-    return st.session_state.sim_client and \
+    return st.session_state.user and \
+        st.session_state.api_client
+
+
+def is_api_client_valid_for_simulation():
+    return is_api_client_valid() and \
     st.session_state.query and \
-    st.session_state.api_key and \
-    st.session_state.owner and \
     st.session_state.project
 
 
@@ -231,19 +231,25 @@ def get_weather_file(column):
 def get_api_inputs(host: str, container):
     """ API Client user inputs """
     with container:
-        api_key = st.sidebar.text_input(
-            'Enter Pollination APIKEY', type='password',
-            help=':bulb: You only need an API Key to access private projects. '
-            'If you do not have a key already go to the settings tab under your profile to '
-            'generate one.'
-        )
-        owner_name = st.sidebar.text_input('Project Owner')
-        project_name = st.sidebar.text_input('Project Name')
+        with st.sidebar:
+            api_client = get_api_client()
+            user = auth_user('auth-user', api_client)
 
-        set_api_client(host=host, 
-            api_key=api_key,
-            owner=owner_name,
-            project=project_name)
+            if user and 'username' in user:
+                # save for results
+                st.session_state.user = user
+                st.session_state.api_client = api_client
+
+                project = select_project(
+                    'select-project',
+                    api_client,
+                    project_owner=user['username']
+                )
+                if project:
+                    set_api_client(host=host, 
+                        api_client=api_client,
+                        owner=user['username'],
+                        project=project['name'])
 
 
 def reset_res():
@@ -312,13 +318,13 @@ def get_inputs(host: str, container):
             update_wea(start_hour, start_day, start_month, end_hour,
                 end_day, end_month)
             if st.session_state.is_cloud:
-                if not is_api_client_valid():
+                if not is_api_client_valid_for_simulation():
                     st.warning('Please, check API data on the sidebar.')
                     return
                 
                 status, error = run_cloud_study(
                     query=st.session_state.query,
-                    api_client=st.session_state.sim_client,
+                    api_client=st.session_state.api_client,
                     model_path=Path(st.session_state.hbjson_path),
                     wea_path=st.session_state.wea_path)
                 if status:
