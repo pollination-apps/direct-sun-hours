@@ -1,7 +1,8 @@
-streamlit_vtkjs>=0.2.0
-honeybee-vtk>=0.37.3
-pollination-streamlit-io>=0.35.1
-pollination_streamlit>=0.2.1
-pollination-streamlit-viewer>=0.4.0
+streamlit_vtkjs>=0.3.2
+honeybee-vtk>=0.38.4
+pollination-streamlit-io>=0.41.0
+pollination_streamlit>=0.5.0
+pollination-streamlit-viewer>=0.4.5
 honeybee-radiance>=1.64.15
-lbt-recipes>=0.22.8
+lbt-recipes>=0.23.0
+ladybug-display>=0.2.0

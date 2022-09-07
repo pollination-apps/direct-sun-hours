@@ -2,6 +2,15 @@
 
 import streamlit as st
 from typing import Dict
+from ladybug_geometry.geometry3d.mesh import Mesh3D
+from ladybug_display.visualization import (
+    VisualizationSet, 
+    AnalysisGeometry,
+    VisualizationData)
+from ladybug_geometry.geometry3d.pointvector import Point3D
+from ladybug_geometry.geometry3d.plane import Plane
+from ladybug.color import Colorset
+from ladybug.legend import Legend, LegendParameters
 import pathlib
 import json
 
@@ -32,7 +41,7 @@ def create_analytical_mesh(
         results_folder: str, 
         model: Dict
     ):
-    """ Generate analysis grid - sketchup and rhino """
+    """ Generate VisualizationSet from results """
     info_file = pathlib.Path(results_folder, 'grids_info.json')
     info = json.loads(info_file.read_text())
     grids = model['properties']['radiance']['sensor_grids']
@@ -42,18 +51,26 @@ def create_analytical_mesh(
     for i, grid in enumerate(info):
         result_file = pathlib.Path(results_folder, f"{grid['full_id']}.res")
         values = [float(v) for v in result_file.read_text().splitlines()]
-        # clean dict
-        mesh = json.dumps(grids[i]['mesh'])
-
         merged_values += values
-        geometries.append(json.loads(mesh))
+        mesh = Mesh3D.from_dict(grids[i]['mesh'])
+        geometries.append(mesh)
 
-    analytical_mesh = {
-        "type": "AnalyticalMesh",
-        "mesh": geometries,
-        "values": merged_values
-    }
-    return analytical_mesh
+    unit = 'hours'
+    color_set = Colorset.original()
+    l_par = LegendParameters(
+        min=min(merged_values), max=max(merged_values), 
+        title=unit, segment_count=11,
+        base_plane=Plane(o=Point3D(20, 80, 0)))
+    l_par.decimal_count = 1
+    l_par.colors = color_set
+    l_par.text_height = 16
+
+    data_set = VisualizationData(values=merged_values, 
+        legend_parameters=l_par)
+    analysis_geo = AnalysisGeometry(geometry=geometries, 
+        data_sets=[data_set])
+    res = VisualizationSet(analysis_geometry=analysis_geo)
+    return res.to_dict()
 
 
 def local_css(file_name):

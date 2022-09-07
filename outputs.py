@@ -142,13 +142,13 @@ def viz_result(host:str, model:dict, container):
                 container)
         elif host == 'sketchup' or host == 'rhino':
             # generate grids
-            analysis_grid = create_analytical_mesh(st.session_state.result_path, 
+            results = create_analytical_mesh(st.session_state.result_path, 
                 model)
             with container:
                 col1, col2 = st.columns(2)
                 with col1:
-                    send_geometry(geometry=analysis_grid,
-                        key='po-grids')
+                    send_results(results=results,
+                        key='po-results')
                 with col2:
                     send_hbjson(
                         hbjson=model,
@@ -158,5 +158,5 @@ def viz_result(host:str, model:dict, container):
             message = read_results_from_folder(st.session_state.result_path, 
                 cfg_file, model)
             send_results(
-                geometry=message,
+                results=message,
                 key='bake-grids')
