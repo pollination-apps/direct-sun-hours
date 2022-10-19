@@ -148,7 +148,8 @@ def viz_result(host:str, model:dict, container):
                 col1, col2 = st.columns(2)
                 with col1:
                     send_results(results=results,
-                        key='po-results')
+                        key='po-results',
+                        option='subscribe-preview')
                 with col2:
                     send_hbjson(
                         hbjson=model,

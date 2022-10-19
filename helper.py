@@ -67,9 +67,11 @@ def create_analytical_mesh(
 
     data_set = VisualizationData(values=merged_values, 
         legend_parameters=l_par)
-    analysis_geo = AnalysisGeometry(geometry=geometries, 
+    analysis_geo = AnalysisGeometry(identifier='analysis-id',
+        geometry=geometries, 
         data_sets=[data_set])
-    res = VisualizationSet(analysis_geometry=analysis_geo)
+    res = VisualizationSet(identifier='vis-id',
+        geometry=[analysis_geo])
     return res.to_dict()
 
 
